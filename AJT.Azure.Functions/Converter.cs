@@ -15,7 +15,7 @@ namespace AJT.Azure.Functions
     {
         [FunctionName("ConvertIntToList")]
         public static async Task<IActionResult> ConvertIntToList(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.System, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("Function ConvertIntToList processed a request.");
@@ -34,7 +34,7 @@ namespace AJT.Azure.Functions
 
         [FunctionName("ConvertStringToList")]
         public static async Task<IActionResult> ConvertStringToList(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.System, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("Function ConvertStringToList processed a request.");
