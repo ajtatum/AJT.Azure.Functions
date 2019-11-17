@@ -1,21 +1,31 @@
 using System.Threading.Tasks;
+using AJT.Azure.Functions;
 using BabouExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Logging;
 
+[assembly: WebJobsStartup(typeof(Startup))]
 namespace AJT.Azure.Functions
 {
-    public static class Converter
+    public class Converter
     {
-        [FunctionName("ConvertIntToList")]
-        public static async Task<IActionResult> ConvertIntToList(
-            [HttpTrigger(AuthorizationLevel.System, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+        private readonly ILogger<Converter> _logger;
+
+        public Converter(ILogger<Converter> logger)
         {
-            log.LogInformation("Function ConvertIntToList processed a request.");
+            _logger = logger;
+        }
+
+        [FunctionName("ConvertIntToList")]
+        public async Task<IActionResult> ConvertIntToList(
+            [HttpTrigger(AuthorizationLevel.System, "get", "post", Route = null)]
+            HttpRequest req)
+        {
+            _logger.LogInformation("Function ConvertIntToList processed a request.");
 
             var requestBody = await req.GetRawBodyStringAsync();
 
@@ -30,11 +40,10 @@ namespace AJT.Azure.Functions
         }
 
         [FunctionName("ConvertStringToList")]
-        public static async Task<IActionResult> ConvertStringToList(
-            [HttpTrigger(AuthorizationLevel.System, "get", "post", Route = null)] HttpRequest req,
-            ILogger log)
+        public async Task<IActionResult> ConvertStringToList(
+            [HttpTrigger(AuthorizationLevel.System, "get", "post", Route = null)] HttpRequest req)
         {
-            log.LogInformation("Function ConvertStringToList processed a request.");
+            _logger.LogInformation("Function ConvertStringToList processed a request.");
 
             var requestBody = await req.GetRawBodyStringAsync();
 
