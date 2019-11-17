@@ -55,8 +55,8 @@ namespace AJT.Azure.Functions
                 var body = $"There's a new version of {appVeyor.EventData.ProjectName}! Update: {appVeyor.EventData.CommitMessage}";
                 var url = $"https://www.nuget.org/packages/{appVeyor.EventData.ProjectName}/{appVeyor.EventData.BuildVersion}";
 
-                if (url.IsNullOrEmpty())
-                    return new BadRequestErrorMessageResult($"Unknown url from project {appVeyor.EventData.ProjectName}");
+                if (channel.IsNullOrEmpty())
+                    return new BadRequestErrorMessageResult($"Unknown channel from project {appVeyor.EventData.ProjectName}");
 
                 var pushLinkRequest = new PushLinkRequest
                 {
