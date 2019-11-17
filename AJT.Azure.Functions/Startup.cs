@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
@@ -19,8 +17,8 @@ namespace AJT.Azure.Functions
 
             // Initialize serilog logger
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console(Serilog.Events.LogEventLevel.Debug)
-                .MinimumLevel.Debug()
+                .WriteTo.Console(Serilog.Events.LogEventLevel.Information)
+                .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
                 .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Events)
