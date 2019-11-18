@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -16,8 +17,12 @@ using SlackBotMessages;
 using SlackBotMessages.Enums;
 using SlackBotMessages.Models;
 using SlackBotNet;
+using SlackBotNet.Messages.WebApi;
 using SlackBotNet.State;
 using static SlackBotNet.MatchFactory;
+using Attachment = SlackBotMessages.Models.Attachment;
+using Field = SlackBotNet.Messages.WebApi.Field;
+using SlackBotNetAttachment = SlackBotNet.Messages.WebApi.Attachment;
 
 [assembly: WebJobsStartup(typeof(Startup))]
 namespace AJT.Azure.Functions
@@ -46,6 +51,23 @@ namespace AJT.Azure.Functions
             });
 
             return new OkResult();
+        }
+
+        private SlackBotNetAttachment BuildMarvelAttachment()
+        {
+            var slackBotNetAttachment = new SlackBotNetAttachment
+            {
+                Color = AttachmentColor.Good,
+                Fields = new List<Field>()
+                {
+                    new Field("Name", "AJ Tatum", true),
+                    new Field("Url","https://ajt.io", true),
+                    new Field("Bio", "This is me", false)
+                },
+                ThumbUrl = "https://ajtatum.com/wp-content/uploads/2014/08/AJ-Tatum-120x120.png"
+            };
+
+            return new SlackBotNetAttachment();
         }
 
         [FunctionName("StanLeeBotCommand")]
@@ -106,7 +128,7 @@ namespace AJT.Azure.Functions
                 .AddField("Website", "https://ajt.io", true)
                 .AddField("Bio", bio)
                 .SetThumbUrl("https://ajtatum.com/wp-content/uploads/2014/08/AJ-Tatum-120x120.png")
-                .SetColor(Color.Red);
+                .SetColor(Color.Green);
 
             message.AddAttachment(attachment);
             await client.SendAsync(message);
@@ -117,27 +139,39 @@ namespace AJT.Azure.Functions
             var marvelGoogleCx = Environment.GetEnvironmentVariable("MARVEL_GOOGLE_CX", EnvironmentVariableTarget.Process);
             var gsr = await GetGoogleSearchSlackResponseJson(slackCommandRequest.Text, marvelGoogleCx);
 
-            var client = new SbmClient(slackCommandRequest.ResponseUrl);
-            var message = new Message();
+            if (gsr != null)
+            {
+                var client = new SbmClient(slackCommandRequest.ResponseUrl);
+                var message = new Message();
 
-            var gsrMetaTags = gsr.Items.ElementAtOrDefault(0)?.PageMap.MetaTags.ElementAtOrDefault(0) ?? new MetaTag();
-            var snippet = gsr.Items.ElementAtOrDefault(0)?.Snippet.CleanString() ?? string.Empty;
+                var gsrMetaTags = gsr.Items.ElementAtOrDefault(0)?.PageMap.MetaTags.ElementAtOrDefault(0) ?? new MetaTag();
+                var snippet = gsr.Items.ElementAtOrDefault(0)?.Snippet.CleanString() ?? string.Empty;
 
-            var title = gsr.Items.ElementAtOrDefault(0)?.Title.Split("|").ElementAtOrDefault(0)?.Trim();
+                var title = gsr.Items.ElementAtOrDefault(0)?.Title.Split("|").ElementAtOrDefault(0)?.Trim();
 
-            var attachment = new Attachment()
-                {
-                    Fallback = snippet,
-                    Pretext = $"Excelsior! I found {title} :star-struck:!"
-                }
-                .AddField("Name", title, true)
-                .AddField("Website", gsrMetaTags.OgUrl, true)
-                .AddField("Bio", snippet)
-                .SetImage(gsr.Items[0].PageMap.CseImage[0].Src)
-                .SetColor(Color.Red);
+                var attachment = new Attachment()
+                    {
+                        Fallback = snippet,
+                        Pretext = $"Excelsior! I found {title} :star-struck:!"
+                    }
+                    .AddField("Name", title, true)
+                    .AddField("Website", gsrMetaTags.OgUrl, true)
+                    .AddField("Bio", snippet)
+                    .SetImage(gsr.Items[0].PageMap.CseImage[0].Src)
+                    .SetColor(Color.Green);
 
-            message.AddAttachment(attachment);
-            await client.SendAsync(message);
+                message.AddAttachment(attachment);
+                var response = await client.SendAsync(message);
+
+                if (response == "ok")
+                    _logger.LogInformation("GetMarvel: Sent message {@Message}", message);
+                else
+                    _logger.LogError("GetMarvel: Error sending {@Message}", message);
+            }
+            else
+            {
+                _logger.LogError("GetMarvel: GetGoogleSearchSlackResponseJson is null. {@SlackCommandRequest}", slackCommandRequest);
+            }
         }
 
         private async Task GetDCComics(SlackCommandRequest slackCommandRequest)
@@ -145,39 +179,62 @@ namespace AJT.Azure.Functions
             var dcComicsCx = Environment.GetEnvironmentVariable("DC_COMICS_GOOGLE_CX", EnvironmentVariableTarget.Process);
             var gsr = await GetGoogleSearchSlackResponseJson(slackCommandRequest.Text, dcComicsCx);
 
-            var client = new SbmClient(slackCommandRequest.ResponseUrl);
-            var message = new Message();
+            if (gsr != null)
+            {
+                var client = new SbmClient(slackCommandRequest.ResponseUrl);
+                var message = new Message();
 
-            var gsrMetaTags = gsr.Items.ElementAtOrDefault(0)?.PageMap.MetaTags.ElementAtOrDefault(0) ?? new MetaTag();
-            var snippet = gsr.Items.ElementAtOrDefault(0)?.Snippet.CleanString() ?? string.Empty;
-            var characterName = gsrMetaTags.OgTitle;
+                var gsrMetaTags = gsr.Items.ElementAtOrDefault(0)?.PageMap.MetaTags.ElementAtOrDefault(0) ?? new MetaTag();
+                var snippet = gsr.Items.ElementAtOrDefault(0)?.Snippet.CleanString() ?? string.Empty;
+                var characterName = gsrMetaTags.OgTitle;
 
-            var attachment = new Attachment()
-                {
-                    Fallback = snippet,
-                    Pretext = $"Excelsior! I found {characterName} :star-struck:!"
-                }
-                .AddField("Name", characterName, true)
-                .AddField("Website", gsrMetaTags.OgUrl, true)
-                .AddField("Bio", snippet)
-                .SetThumbUrl(gsr.Items[0].PageMap.CseThumbnail.ElementAtOrDefault(0)?.Src)
-                .SetColor(Color.Red);
+                var attachment = new Attachment()
+                    {
+                        Fallback = snippet,
+                        Pretext = $"Excelsior! I found {characterName} :star-struck:!"
+                    }
+                    .AddField("Name", characterName, true)
+                    .AddField("Website", gsrMetaTags.OgUrl, true)
+                    .AddField("Bio", snippet)
+                    .SetThumbUrl(gsr.Items[0].PageMap.CseThumbnail.ElementAtOrDefault(0)?.Src)
+                    .SetColor(Color.Green);
 
-            message.AddAttachment(attachment);
-            await client.SendAsync(message);
+                message.AddAttachment(attachment);
+                var response = await client.SendAsync(message);
+
+                if(response == "ok")
+                    _logger.LogInformation("GetDCComics: Sent message {@Message}", message);
+                else
+                    _logger.LogError("GetDCComics: Error sending {@Message}", message);
+            }
+            else
+            {
+                _logger.LogError("GetDCComics: GetGoogleSearchSlackResponseJson is null. {@SlackCommandRequest}", slackCommandRequest);
+            }
         }
 
-        private static async Task<GoogleSearchResponse> GetGoogleSearchSlackResponseJson(string search, string cse)
+        private async Task<GoogleSearchResponse> GetGoogleSearchSlackResponseJson(string search, string cse)
         {
             var googleApiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY", EnvironmentVariableTarget.Process);
 
             var url = $"https://www.googleapis.com/customsearch/v1?cx={cse}&key={googleApiKey}&q={search}";
+            var result = string.Empty;
 
-            var client = new HttpClient();
-            var result = await client.GetStringAsync(url);
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    result = await client.GetStringAsync(url);
+                }
 
-            var googleSearchResponse = JsonConvert.DeserializeObject<GoogleSearchResponse>(result);
-            return googleSearchResponse;
+                var googleSearchResponse = JsonConvert.DeserializeObject<GoogleSearchResponse>(result);
+                return googleSearchResponse;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Using search {Url} return result: {Result}", url, result);
+                return null;
+            }
         }
     }
 }
