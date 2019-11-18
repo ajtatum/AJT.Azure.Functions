@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using AJT.Azure.Functions;
 using AJT.Azure.Functions.Models;
@@ -14,8 +12,6 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Asn1.Ocsp;
-using Serilog;
 using SlackBotMessages;
 using SlackBotMessages.Enums;
 using SlackBotMessages.Models;
@@ -124,8 +120,9 @@ namespace AJT.Azure.Functions
             var client = new SbmClient(slackCommandRequest.ResponseUrl);
             var message = new Message();
 
-            var gsrMetaTags = gsr.Items[0].PageMap.MetaTags[0];
-            var snippet = gsr.Items[0].Snippet;
+            var gsrMetaTags = gsr.Items.ElementAtOrDefault(0)?.PageMap.MetaTags.ElementAtOrDefault(0) ?? new MetaTag();
+            var snippet = gsr.Items.ElementAtOrDefault(0)?.Snippet.CleanString() ?? string.Empty;
+
             var characterName = gsrMetaTags.OgTitle.Split("|").ElementAtOrDefault(0)?.Trim();
 
             var attachment = new Attachment()
@@ -152,7 +149,7 @@ namespace AJT.Azure.Functions
             var message = new Message();
 
             var gsrMetaTags = gsr.Items.ElementAtOrDefault(0)?.PageMap.MetaTags.ElementAtOrDefault(0) ?? new MetaTag();
-            var snippet = gsr.Items.ElementAtOrDefault(0)?.Snippet ?? string.Empty;
+            var snippet = gsr.Items.ElementAtOrDefault(0)?.Snippet.CleanString() ?? string.Empty;
             var characterName = gsrMetaTags.OgTitle;
 
             var attachment = new Attachment()
@@ -170,7 +167,7 @@ namespace AJT.Azure.Functions
             await client.SendAsync(message);
         }
 
-        private async Task<GoogleSearchResponse> GetGoogleSearchSlackResponseJson(string search, string cse)
+        private static async Task<GoogleSearchResponse> GetGoogleSearchSlackResponseJson(string search, string cse)
         {
             var googleApiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY", EnvironmentVariableTarget.Process);
 
