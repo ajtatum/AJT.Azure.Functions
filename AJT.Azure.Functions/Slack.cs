@@ -123,14 +123,14 @@ namespace AJT.Azure.Functions
             var gsrMetaTags = gsr.Items.ElementAtOrDefault(0)?.PageMap.MetaTags.ElementAtOrDefault(0) ?? new MetaTag();
             var snippet = gsr.Items.ElementAtOrDefault(0)?.Snippet.CleanString() ?? string.Empty;
 
-            var characterName = gsrMetaTags.OgTitle.Split("|").ElementAtOrDefault(0)?.Trim();
+            var title = gsr.Items.ElementAtOrDefault(0)?.Title.Split("|").ElementAtOrDefault(0)?.Trim();
 
             var attachment = new Attachment()
                 {
                     Fallback = snippet,
-                    Pretext = $"Excelsior! I found {characterName} :star-struck:!"
+                    Pretext = $"Excelsior! I found {title} :star-struck:!"
                 }
-                .AddField("Name", characterName, true)
+                .AddField("Name", title, true)
                 .AddField("Website", gsrMetaTags.OgUrl, true)
                 .AddField("Bio", snippet)
                 .SetImage(gsr.Items[0].PageMap.CseImage[0].Src)
