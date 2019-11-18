@@ -33,8 +33,8 @@ namespace AJT.Azure.Functions
         {
             try
             {
-                var pushBulletApiKey = Environment.GetEnvironmentVariable("PushBulletApiKey", EnvironmentVariableTarget.Process);
-                var pushBulletEncryptionKey = Environment.GetEnvironmentVariable("PushBulletEncryptionKey", EnvironmentVariableTarget.Process);
+                var pushBulletApiKey = Environment.GetEnvironmentVariable("PUSHBULLET_API_KEY", EnvironmentVariableTarget.Process);
+                var pushBulletEncryptionKey = Environment.GetEnvironmentVariable("PUSHBULLET_ENCRYPTION_KEY", EnvironmentVariableTarget.Process);
 
                 if (pushBulletApiKey.IsNullOrEmpty())
                     return new BadRequestErrorMessageResult("PushBelletApiKey cannot be found");
