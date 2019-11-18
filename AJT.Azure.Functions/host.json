@@ -7,10 +7,8 @@
     "logging": {
         "fileLoggingMode": "always",
         "logLevel": {
-            "default": "Information",
-            "Host.Results": "Error",
-            "Function": "Trace",
-            "Host.Aggregator": "Trace"
+            "default": "Warning",
+            "AJT.Azure.Functions": "Information"
         }
     }
 }

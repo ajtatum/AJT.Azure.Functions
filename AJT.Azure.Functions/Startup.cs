@@ -25,12 +25,13 @@ namespace AJT.Azure.Functions
             telemetryConfiguration.InstrumentationKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY", EnvironmentVariableTarget.Process);
 
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console(Serilog.Events.LogEventLevel.Information)
-                .MinimumLevel.Information()
+                .MinimumLevel.Warning()
+                .MinimumLevel.Override("AJT.Azure.Functions", LogEventLevel.Information)
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
+                .WriteTo.Console()
                 .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Events)
-                .WriteTo.AzureTableStorage(cloudStorageAccount, storageTableName: "Logs", restrictedToMinimumLevel: LogEventLevel.Information)
+                .WriteTo.AzureTableStorage(cloudStorageAccount,storageTableName:"Logs",restrictedToMinimumLevel:LogEventLevel.Information)
                 .CreateLogger();
         }
 
