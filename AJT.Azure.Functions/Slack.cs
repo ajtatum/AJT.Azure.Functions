@@ -8,9 +8,9 @@ using AJT.Azure.Functions.Models;
 using BabouExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SlackBotMessages;
@@ -24,16 +24,16 @@ using Attachment = SlackBotMessages.Models.Attachment;
 using Field = SlackBotNet.Messages.WebApi.Field;
 using SlackBotNetAttachment = SlackBotNet.Messages.WebApi.Attachment;
 
-[assembly: WebJobsStartup(typeof(Startup))]
+[assembly: FunctionsStartup(typeof(Startup))]
 namespace AJT.Azure.Functions
 {
     public class Slack
     {
         private readonly ILogger<Slack> _logger;
 
-        public Slack(ILogger<Slack> logger)
+        public Slack(ILoggerFactory loggerFactory)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<Slack>();
         }
 
         [FunctionName("StanLeeBot")]

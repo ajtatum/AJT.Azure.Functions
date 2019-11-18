@@ -5,10 +5,11 @@
         "version": "[1.*, 2.0.0)"
     },
     "logging": {
-        "fileLoggingMode": "always",
+        "fileLoggingMode": "debugOnly",
         "logLevel": {
             "default": "Warning",
-            "AJT.Azure.Functions": "Information"
+            "AJT.Azure.Functions": "Trace",
+            "Function": "Trace"
         }
     }
 }

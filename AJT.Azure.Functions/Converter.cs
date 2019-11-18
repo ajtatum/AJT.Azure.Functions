@@ -3,21 +3,22 @@ using AJT.Azure.Functions;
 using BabouExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Logging;
 
-[assembly: WebJobsStartup(typeof(Startup))]
+[assembly: FunctionsStartup(typeof(Startup))]
 namespace AJT.Azure.Functions
 {
     public class Converter
     {
         private readonly ILogger<Converter> _logger;
 
-        public Converter(ILogger<Converter> logger)
+        public Converter(ILoggerFactory loggerFactory)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<Converter>();
         }
 
         [FunctionName("ConvertIntToList")]

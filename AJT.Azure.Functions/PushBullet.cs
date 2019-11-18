@@ -6,6 +6,7 @@ using AJT.Azure.Functions.Models;
 using BabouExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Hosting;
@@ -13,17 +14,18 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using PushBulletSharp.Core;
 using PushBulletSharp.Core.Models.Requests;
+using Serilog;
 
-[assembly: WebJobsStartup(typeof(Startup))]
+[assembly: FunctionsStartup(typeof(Startup))]
 namespace AJT.Azure.Functions
 {
     public class PushBullet
     {
         private readonly ILogger<PushBullet> _logger;
 
-        public PushBullet(ILogger<PushBullet> logger)
+        public PushBullet(ILoggerFactory loggerFactory)
         {
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<PushBullet>();
         }
 
         [FunctionName("SendPushBulletFromAppVeyor")]
@@ -46,7 +48,8 @@ namespace AJT.Azure.Functions
 
                 var appVeyor = JsonConvert.DeserializeObject<AppVeyor>(requestBody);
 
-                _logger.LogInformation("AppVeyor Request Built: {@AppVeyor}", appVeyor);
+                Log.Logger.Information("AppVeyor Request Built: {@AppVeyor}", appVeyor);
+                //_logger.LogInformation("AppVeyor Request Built: {@AppVeyor}", appVeyor);
 
                 var client = new PushBulletClient(pushBulletApiKey, pushBulletEncryptionKey, TimeZoneInfo.Local);
 
