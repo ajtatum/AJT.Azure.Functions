@@ -3,7 +3,10 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Auth;
 using Serilog;
+using Serilog.Events;
 using Serilog.Exceptions;
 
 namespace AJT.Azure.Functions
@@ -12,16 +15,22 @@ namespace AJT.Azure.Functions
     {
         public Startup()
         {
-            var telemetryConfiguration = TelemetryConfiguration.CreateDefault();
-            telemetryConfiguration.InstrumentationKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY",EnvironmentVariableTarget.Process);
+            var storageAccountName = Environment.GetEnvironmentVariable("CLOUD_STORAGE_ACCOUNT_NAME", EnvironmentVariableTarget.Process);
+            var storageAccountKey = Environment.GetEnvironmentVariable("CLOUD_STORAGE_ACCOUNT_KEY", EnvironmentVariableTarget.Process);
 
-            // Initialize serilog logger
+            StorageCredentials storageCredentials = new StorageCredentials(storageAccountName, storageAccountKey);
+            CloudStorageAccount cloudStorageAccount = new CloudStorageAccount(storageCredentials, true);
+
+            var telemetryConfiguration = TelemetryConfiguration.CreateDefault();
+            telemetryConfiguration.InstrumentationKey = Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY", EnvironmentVariableTarget.Process);
+
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console(Serilog.Events.LogEventLevel.Information)
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .Enrich.WithExceptionDetails()
                 .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Events)
+                .WriteTo.AzureTableStorage(cloudStorageAccount, storageTableName: "Logs", restrictedToMinimumLevel: LogEventLevel.Information)
                 .CreateLogger();
         }
 
