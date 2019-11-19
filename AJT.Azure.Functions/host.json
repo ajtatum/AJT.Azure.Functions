@@ -8,8 +8,8 @@
         "fileLoggingMode": "debugOnly",
         "logLevel": {
             "default": "Warning",
-            "AJT.Azure.Functions": "Trace",
-            "Function": "Trace"
+            "AJT.Azure.Functions": "Debug",
+            "Function": "Debug"
         }
     }
 }

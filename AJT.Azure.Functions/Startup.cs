@@ -31,7 +31,7 @@ namespace AJT.Azure.Functions
                 .Enrich.WithExceptionDetails()
                 .WriteTo.Console()
                 .WriteTo.ApplicationInsights(telemetryConfiguration, TelemetryConverter.Events)
-                .WriteTo.AzureTableStorage(cloudStorageAccount,storageTableName:"Logs",restrictedToMinimumLevel:LogEventLevel.Information)
+                .WriteTo.AzureTableStorage(cloudStorageAccount,storageTableName:"Logs")
                 .CreateLogger();
         }
 

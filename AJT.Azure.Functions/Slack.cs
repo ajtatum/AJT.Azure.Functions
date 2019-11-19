@@ -31,15 +31,13 @@ namespace AJT.Azure.Functions
     {
         private readonly ILogger<Slack> _logger;
 
-        public Slack(ILoggerFactory loggerFactory)
+        public Slack(ILogger<Slack> logger) 
         {
-            _logger = loggerFactory.CreateLogger<Slack>();
+            _logger = logger;
         }
 
         [FunctionName("StanLeeBot")]
-        public async Task<IActionResult> StanLeeBot(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
-            HttpRequest req)
+        public async Task<IActionResult> StanLeeBot(HttpRequest req)
         {
             var slackApiToken = Environment.GetEnvironmentVariable("SLACK_API_TOKEN", EnvironmentVariableTarget.Process);
 
